@@ -218,7 +218,7 @@ function addKeyEvent(etype, e) {
 	eventinfo["location"] = calcLocation(e.location);
 	eventinfo["repeat"] = e.repeat;
 	eventinfo["isComposing"] = e.isComposing;
-	eventinfo["Input field"] = calcInput();
+	eventinfo["Input field"] = calcInput() + e.target;
 
 	extra_class = undefined;
 	if (_isKeydown && document.getElementById("hl_keydown").checked) {
@@ -260,7 +260,7 @@ function addInputEvent(etype, e) {
 	eventinfo["isComposing"] = e.isComposing;
 	eventinfo["inputType"] = e.inputType;
 	eventinfo["data"] = calcString(e.data);
-	eventinfo["Input field"] = calcInput();
+	eventinfo["Input field"] = calcInput() + e.target;
 	addEventToOutput(eventinfo);
 }
 
@@ -296,7 +296,7 @@ function addCompositionEvent(etype, e) {
 	eventinfo["Event type"] = calcHilightString(etype, e.type, true);
 	eventinfo["isComposing"] = e.isComposing;
 	eventinfo["data"] = calcString(e.data);
-	eventinfo["Input field"] = calcInput();
+	eventinfo["Input field"] = calcInput() + e.target;
 	addEventToOutput(eventinfo);
 }
 

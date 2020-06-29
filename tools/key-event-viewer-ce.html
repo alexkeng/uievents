@@ -571,10 +571,24 @@ init();
         
                 this.editContext.addEventListener("textupdate", (e => {
                     console.log("update text " + "Selection offsets are " + "start " + e.newSelectionStart + "end " + e.newSelectionEnd);
+
+                    handleKeyEvent("keydown", e); // use 'keydown' just to reuse existing framework.
+
                     this.model.updateText(e.updateText, e.updateRangeStart, e.updateRangeEnd);
                     this.view.queueUpdate();
                 }).bind(this));
-                editContext.addEventListener("textformatupdate", e => { console.log("formatupdating") });
+
+                editContext.addEventListener("textformatupdate", e => { 
+                        handleKeyEvent("keydown", e);
+                        console.log("formatupdating") });
+
+                editContext.addEventListener("compositionstart", e => { 
+                        handleKeyEvent("keydown", e);
+                        console.log("compositionstart") });
+
+                editContext.addEventListener("compositionend", e => { 
+                        handleKeyEvent("keydown", e);
+                        console.log("compositionend") });
             }
         }
         
