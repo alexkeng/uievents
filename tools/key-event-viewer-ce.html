@@ -85,6 +85,7 @@ init();
                 this.caret.style = "outline:1px solid black";
         
                 this.viewElement = document.createElement('code');
+                this.viewElement.setAttribute("editcontext", "true");
                 this.viewElement.appendChild(this.caret);
                 this.viewElement.style = "position:relative; white-space:pre; width:300px; height:300px";
 
