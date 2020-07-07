@@ -84,7 +84,8 @@ init();
                 this.caretInterval = -1;
                 this.caret.style = "outline:1px solid black";
         
-                this.viewElement = document.createElement('code');
+                //this.viewElement = document.createElement('code');
+                this.viewElement = document.createElement('div');
                 this.viewElement.setAttribute("editcontext", "true");
                 this.viewElement.appendChild(this.caret);
                 this.viewElement.style = "position:relative; white-space:pre; width:300px; height:300px";
@@ -257,10 +258,26 @@ init();
                 this.desiredCaretX = 0;
                 this.selection = new Selection();
                 this.CaretMovement = { LEFT:0, RIGHT:1, WORDLEFT:2, WORDRIGHT:3, HOME:4, END:5, UP: 6, DOWN: 7};
+                this.isBold = false;
+                this.isItalic = false;
+            }
+
+            toggleBold() {
+                this.isBold = !this.isBold;
             }
         
+            toggleItalic() {
+                this.isItalic = !this.isItalic;
+            }
+
             asHtml() {
                 let html = "";
+                if (this.isBold) {
+                    html += "<b>";
+                }
+                if (this.isItalic) {
+                    html += "<i>";
+                }
                 let selectionStart = this.selection.start();
                 let selectionEnd = this.selection.end();
                 this.textRows.forEach((row, index) => {
@@ -301,6 +318,13 @@ init();
         
                     html += "<br>";
                 })
+
+                if (this.isItalic) {
+                    html += "</i>";
+                }
+                if (this.isBold) {
+                    html += "</b>";
+                }
         
                 return html;
             }
@@ -479,6 +503,17 @@ init();
                 this.view = view;
                 this.controlPressed = false;
         
+                editableviewholder.addEventListener("beforeinput", e => {
+                    console.log("beforeInput [" + e.inputType + "]");
+                    if (e.inputType === "formatBold") {
+                        this.model.toggleBold();
+                        this.view.queueUpdate();
+                    } else if (e.inputType === "formatItalic") {
+                        this.model.toggleItalic();
+                        this.view.queueUpdate();
+                    }
+                });
+                
                 editableviewholder.addEventListener("focus", (e => {
                     console.log("focus");
                     this.view.focus();
