@@ -86,7 +86,7 @@ init();
         
                 //this.viewElement = document.createElement('code');
                 this.viewElement = document.createElement('div');
-                this.viewElement.setAttribute("editcontext", "true");
+                this.viewElement.attachEditContext(editContext);
                 this.viewElement.appendChild(this.caret);
                 this.viewElement.style = "position:relative; white-space:pre; width:300px; height:300px";
 
