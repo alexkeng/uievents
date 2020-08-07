@@ -527,13 +527,13 @@ init();
                 editableviewholder.addEventListener("keypress", e => {
                     console.log("keypress "+e.key);
                     if (e.key === "Enter"){
-                        this.editContext.updateText(this.editContext.selectionStart, this.editContext.selectionEnd, "\n");
-                        this.editContext.updateSelection(this.editContext.selectionStart + 1, this.editContext.selectionStart + 1);
+                        // this.editContext.updateText(this.editContext.selectionStart, this.editContext.selectionEnd, "\n");
+                        // this.editContext.updateSelection(this.editContext.selectionStart + 1, this.editContext.selectionStart + 1);
                     } else {
-                        this.model.updateText(e.key, this.editContext.selectionStart, this.editContext.selectionEnd);
-                        this.editContext.updateText(this.editContext.selectionStart, this.editContext.selectionEnd, e.key);
-                        this.editContext.updateSelection(this.editContext.selectionStart + e.key.length, this.editContext.selectionStart + e.key.length);
-                        this.view.queueUpdate();
+                        // this.model.updateText(e.key, this.editContext.selectionStart, this.editContext.selectionEnd);
+                        // this.editContext.updateText(this.editContext.selectionStart, this.editContext.selectionEnd, e.key);
+                        // this.editContext.updateSelection(this.editContext.selectionStart + e.key.length, this.editContext.selectionStart + e.key.length);
+                        // this.view.queueUpdate();
                     }
                 });
         
