@@ -49,7 +49,7 @@ var _key_table_info = [
 
 	// Input
 	["Input", "inputbox", [
-		["Input field", "inputbox", "text", {'align': 'left'}],
+		["EditContext", "inputbox", "text", {'align': 'left'}],
 	], {'checked': true, 'grouplabel': false}],
 ];
 
@@ -218,7 +218,7 @@ function addKeyEvent(etype, e) {
 	eventinfo["location"] = calcLocation(e.location);
 	eventinfo["repeat"] = e.repeat;
 	eventinfo["isComposing"] = e.isComposing;
-	eventinfo["Input field"] = calcInput() + e.target;
+	eventinfo["EditContext"] = calcInput() + e.target;
 
 	extra_class = undefined;
 	if (_isKeydown && document.getElementById("hl_keydown").checked) {
@@ -260,7 +260,7 @@ function addInputEvent(etype, e) {
 	eventinfo["isComposing"] = e.isComposing;
 	eventinfo["inputType"] = e.inputType;
 	eventinfo["data"] = calcString(e.data);
-	eventinfo["Input field"] = calcInput() + e.target;
+	eventinfo["EditContext"] = calcInput() + e.target;
 	addEventToOutput(eventinfo);
 }
 
@@ -296,7 +296,7 @@ function addCompositionEvent(etype, e) {
 	eventinfo["Event type"] = calcHilightString(etype, e.type, true);
 	eventinfo["isComposing"] = e.isComposing;
 	eventinfo["data"] = calcString(e.data);
-	eventinfo["Input field"] = calcInput() + e.target;
+	eventinfo["EditContext"] = calcInput() + e.target;
 	addEventToOutput(eventinfo);
 }
 
@@ -304,12 +304,27 @@ function addCompositionEvent(etype, e) {
 // Helper functions
 // =====
 
+if (!String.prototype.splice) {
+    String.prototype.splice = function(start, delCount, newSubStr) {
+        return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
+    };
+}
+
 function calcInput() {
 	var el = document.getElementById("editableviewholder");
-	var value = "";
+    var value = "";
 	if (el.tagName == "DIV") {
 		// <div contenteditable>
-		value = el.innerText;
+        var editContext = el.childNodes[0].getAttachedEditContext();
+        if (editContext) {
+            value = editContext.text;
+            var selectionStart = editContext.selectionStart;
+            var selectionEnd = editContext.selectionEnd;
+            value = el.innerText.splice(selectionEnd, 0, "}"); // To visualize the selection
+            value = value.splice(selectionStart, 0, "{");
+        } else {
+            value = el.innerText;
+        }
 	} else {
 		// <input>
 		value = el.value;
