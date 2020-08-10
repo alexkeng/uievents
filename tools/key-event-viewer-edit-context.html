@@ -330,11 +330,12 @@ init();
             }
         
             updateText(text, start, end) {
-                console.log(`text:${text}, start:${start}, end:${end}`)
-                console.log(`line: ${this.textRows[this.caretPosition.y].join("")}`)
+                console.log(`model.updateText:[${text}], range (${start}, ${end})`)
+                console.log(`model before updateText: [${this.textRows[this.caretPosition.y].join("")}]`)
                 this.textRows[this.caretPosition.y].splice(start, end - start, ...text.split(""));
                 this.caretPosition.set(this.caretPosition.x - (end - start) + text.length, this.caretPosition.y);
                 this.desiredCaretX = this.caretPosition.x;
+                console.log(`model after updateText: [${this.textRows[this.caretPosition.y].join("")}]`)
             }
         
             getCaretPosition() {
@@ -606,11 +607,11 @@ init();
                 });
         
                 this.editContext.addEventListener("textupdate", (e => {
-                    console.log("update text " + "Selection offsets are " + "start " + e.newSelectionStart + "end " + e.newSelectionEnd);
-
+                    console.log(`textupdate: [${e.updateText}], selection (${e.newSelectionStart}, ${e.newSelectionEnd})`);
+                    console.log(`editContext.text= [${this.editContext.text}]`);
                     handleKeyEvent("keydown", e); // use 'keydown' just to reuse existing framework.
-
                     this.model.updateText(e.updateText, e.updateRangeStart, e.updateRangeEnd);
+
                     this.view.queueUpdate();
                 }).bind(this));
 
