@@ -320,7 +320,7 @@ function calcInput() {
             value = editContext.text;
             var selectionStart = editContext.selectionStart;
             var selectionEnd = editContext.selectionEnd;
-            value = el.innerText.splice(selectionEnd, 0, "}"); // To visualize the selection
+            value = value.splice(selectionEnd, 0, "}"); // To visualize the selection
             value = value.splice(selectionStart, 0, "{");
         } else {
             value = el.innerText;
