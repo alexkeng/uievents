@@ -52,7 +52,7 @@
     <p> This is an editable region, based on EditContext:<br>
         <b>usage:</b> new EditContext()
     </p>
-<div id="editableviewholder" contenteditable=false style="width:300px; height:300px; border:blue 1px dashed" tabindex="-1"></div>
+<div id="editableviewholder" contenteditable=false style="width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
 
 <p>
 <input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/>
@@ -88,7 +88,7 @@ init();
                 this.viewElement = document.createElement('div');
                 this.viewElement.attachEditContext(editContext);
                 this.viewElement.appendChild(this.caret);
-                this.viewElement.style = "position:relative; white-space:pre; width:300px; height:300px";
+                this.viewElement.style = "position:relative; white-space:pre; width:300px; height:150px";
 
 
                 // TODO: Belong on controller?
@@ -539,7 +539,7 @@ init();
                 });
         
                 editableviewholder.addEventListener("keydown", e => {
-                    console.log(`keydown: ${e.key}`)
+                    console.log(`keydown from .html handler: ${e.key}`)
                     switch (e.key) {
                         case "ArrowLeft":
                             this.model.moveCaret(this.model.CaretMovement.LEFT, this.shiftPressed);
