@@ -61,13 +61,16 @@ init();
     });
 
     editContext.addEventListener("textformatupdate", e => { 
-        handleKeyEvent("keydown", e); });
+        handleKeyEvent("keydown", e);
+    });
 
     editContext.addEventListener("compositionstart", e => { 
-        handleKeyEvent("keydown", e); });
+        handleKeyEvent("keydown", e);
+    });
 
     editContext.addEventListener("compositionend", e => { 
-        handleKeyEvent("keydown", e); });
+        handleKeyEvent("keydown", e);
+    });
 </script>
 </body>
 </html>
