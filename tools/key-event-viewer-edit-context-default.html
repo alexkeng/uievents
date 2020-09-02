@@ -13,7 +13,7 @@
 <a class="main_link" href="main.html">UI Events Testing Tools</a>
 <h1>Keyboard Event Viewer <span class="subtitle">for EditContext</span></h1>
 <p>UserAgent: <span id="useragent"></span></p>
-<p><code>div</code> with <code>contenteditable="false"</code>:</p>
+<p><code>div</code> with <code>contenteditable="false"</code> with EditContext attached:</p>
 <p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
 <div id="options"></div>
 
@@ -29,11 +29,11 @@ init();
     var editContext = new EditContext();
 
     var viewElement = document.createElement('div');
+    viewElement.style = "position:relative; white-space:pre; width:300px; height:150px";
+    viewElement.contentEditable = false;
+    editableviewholder.appendChild(viewElement);
 
     viewElement.attachEditContext(editContext);
-
-    viewElement.style = "position:relative; white-space:pre; width:300px; height:150px";
-    editableviewholder.appendChild(viewElement);
 
     viewElement.addEventListener("focus", e => {
         editContext.focus();
@@ -43,21 +43,31 @@ init();
         editContext.blur();
     });
 
+    viewElement.addEventListener("beforeinput", e => {
+        if (e.inputType === "deleteContentBackward") {
+            //e.preventDefault();
+        }
+    });
+
     editContext.addEventListener("textupdate", e => {
-        console.log(`textupdate: [${e.updateText}], selection (${e.newSelectionStart}, ${e.newSelectionEnd}), range (${e.updateRangeStart}, ${e.updateRangeEnd})`);
-        console.log(`editContext.text = [${editContext.text}]`);
+        // Update event table
         handleKeyEvent("keydown", e);
 
+        // Visualize EditContext buffer
         viewElement.innerText = editContext.text;
 
-        // select range //buggy
-        // let selection = window.getSelection();
-        // let textNode = viewElement.childNodes[0];
-        // if (e.newSelectionStart == e.newSelectionEnd) {
-        //     selection.collapse(textNode, e.newSelectionStart);
-        // } else {
-        //     selection.setBaseAndExtent(textNode, e.newSelectionStart, textNode, e.newSelectionEnd);
-        // }
+        // Visualize caret/selection
+        let text = viewElement.childNodes[0];
+        let range = document.createRange();
+        range.setStart(text, e.newSelectionStart);
+        range.setEnd(text, e.newSelectionEnd);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+
+        // Update bounds for IME.
+        let controlBounds = viewElement.getBoundingClientRect();
+        let selectionBounds = range.getBoundingClientRect();
+        editContext.updateLayout(controlBounds, selectionBounds);
     });
 
     editContext.addEventListener("textformatupdate", e => { 
