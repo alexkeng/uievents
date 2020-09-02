@@ -64,7 +64,7 @@ init();
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(range);
 
-        // Update bounds for IME.
+        // Update bounds for IME. (TODO: handle zoom factor)
         let controlBounds = viewElement.getBoundingClientRect();
         let selectionBounds = range.getBoundingClientRect();
         editContext.updateLayout(controlBounds, selectionBounds);
