@@ -13,7 +13,7 @@ var _key_table_info = [
 		["charCode", "legacy", "html"],
 		["keyCode", "legacy", "html"],
 		["which", "legacy", "text"],
-	], {'checked': true}],
+	], {'checked': false}],
 
 	// KeyboardEvent - Modifiers
 	["Modifiers", "modifiers", [
@@ -22,7 +22,7 @@ var _key_table_info = [
 		["ctrl", "modifiers", "bool"],
 		["alt", "modifiers", "bool"],
 		["meta", "modifiers", "bool"],
-	], {'checked': true}],
+	], {'checked': false}],
 
 	// KeyboardEvent - Old DOM3
 	["Old DOM3", "olddom3", [
@@ -218,7 +218,8 @@ function addKeyEvent(etype, e) {
 	eventinfo["location"] = calcLocation(e.location);
 	eventinfo["repeat"] = e.repeat;
 	eventinfo["isComposing"] = e.isComposing;
-	eventinfo["EditContext"] = calcInput() + e.target;
+	eventinfo["data"] = e.target;
+	eventinfo["EditContext"] = calcInput(e.editContext);
 
 	extra_class = undefined;
 	if (_isKeydown && document.getElementById("hl_keydown").checked) {
@@ -236,6 +237,7 @@ function onTextInput(e) {
 }
 
 function onBeforeInput(e) {
+    //console.log("viewHolder: beforeinput")
 	handleInputEvent("beforeinput", e);
 }
 
@@ -260,7 +262,7 @@ function addInputEvent(etype, e) {
 	eventinfo["isComposing"] = e.isComposing;
 	eventinfo["inputType"] = e.inputType;
 	eventinfo["data"] = calcString(e.data);
-	eventinfo["EditContext"] = calcInput() + e.target;
+	eventinfo["EditContext"] = calcInput(e.editContext) + e.target;
 	addEventToOutput(eventinfo);
 }
 
@@ -269,14 +271,17 @@ function addInputEvent(etype, e) {
 // =====
 
 function onCompositionStart(e) {
+    console.log("js: compositionstart");
 	handleCompositionEvent("compositionstart", e);
 }
 
 function onCompositionUpdate(e) {
+    console.log("js: compositionupdate");
 	handleCompositionEvent("compositionupdate", e);
 }
 
 function onCompositionEnd(e) {
+    console.log("js: compositionend");
 	handleCompositionEvent("compositionend", e);
 }
 
@@ -296,7 +301,7 @@ function addCompositionEvent(etype, e) {
 	eventinfo["Event type"] = calcHilightString(etype, e.type, true);
 	eventinfo["isComposing"] = e.isComposing;
 	eventinfo["data"] = calcString(e.data);
-	eventinfo["EditContext"] = calcInput() + e.target;
+	eventinfo["EditContext"] = calcInput(e.editContext) + e.target;
 	addEventToOutput(eventinfo);
 }
 
@@ -310,12 +315,14 @@ if (!String.prototype.splice) {
     };
 }
 
-function calcInput() {
+function calcInput(editContext_backup) {
 	var el = document.getElementById("editableviewholder");
     var value = "";
 	if (el.tagName == "DIV") {
 		// <div contenteditable>
-        var editContext = el.childNodes[0].getAttachedEditContext();
+		var editContext = el.childNodes[0].getAttachedEditContext();
+		if (!editContext)
+			editContext = editContext_backup;
         if (editContext) {
             value = editContext.text;
             var selectionStart = editContext.selectionStart;
