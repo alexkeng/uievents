@@ -52,7 +52,7 @@
     <p> This is an editable region, based on EditContext:<br>
         <b>usage:</b> new EditContext()
     </p>
-<div id="editableviewholder" contenteditable=false style="width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+<div id="editableView" contenteditable=false style="width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
 
 <p>
 <input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/>
@@ -92,13 +92,13 @@ init();
 
 
                 // TODO: Belong on controller?
-                editableviewholder.addEventListener("mouseup", (function () {
+                editableView.addEventListener("mouseup", (function () {
                     console.log("view got mouseup");
                     this.focus();
                     this.updateView();
                 }).bind(this));
         
-                editableviewholder.appendChild(this.viewElement);
+                editableView.appendChild(this.viewElement);
         
                 this.updateQueued = false;
         
@@ -504,7 +504,7 @@ init();
                 this.view = view;
                 this.controlPressed = false;
         
-                editableviewholder.addEventListener("beforeinput", e => {
+                editableView.addEventListener("beforeinput", e => {
                     console.log("beforeInput [" + e.inputType + "]");
                     if (e.inputType === "formatBold") {
                         this.model.toggleBold();
@@ -515,17 +515,17 @@ init();
                     }
                 });
                 
-                editableviewholder.addEventListener("focus", (e => {
+                editableView.addEventListener("focus", (e => {
                     console.log("focus");
                     this.view.focus();
                 }).bind(this));
         
-                editableviewholder.addEventListener("blur", (e => {
+                editableView.addEventListener("blur", (e => {
                     console.log("blur");
                     this.view.blur();
                 }).bind(this));
         
-                editableviewholder.addEventListener("keypress", e => {
+                editableView.addEventListener("keypress", e => {
                     console.log("keypress "+e.key);
                     if (e.key === "Enter"){
                         // this.editContext.updateText(this.editContext.selectionStart, this.editContext.selectionEnd, "\n");
@@ -538,7 +538,7 @@ init();
                     }
                 });
         
-                editableviewholder.addEventListener("keydown", e => {
+                editableView.addEventListener("keydown", e => {
                     console.log(`keydown from .html handler: ${e.key}`)
                     switch (e.key) {
                         case "ArrowLeft":
@@ -594,7 +594,7 @@ init();
                             break;
                     }
                 });
-                editableviewholder.addEventListener("keyup", e => {
+                editableView.addEventListener("keyup", e => {
                     console.log(`keyup: ${e.key}`)
                     switch (e.key) {
                         case "Control":

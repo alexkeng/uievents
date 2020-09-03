@@ -17,7 +17,7 @@
 <p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
 <div id="options"></div>
 
-<div id="editableviewholder" contenteditable=false style="width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+<div id="editableView" contenteditable=false style="width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
 
 <br><table id="output"></table>
 
@@ -32,7 +32,7 @@ init();
     var viewElement = document.createElement('div');
     viewElement.style = "position:relative; white-space:pre; width:300px; height:150px";
     viewElement.contentEditable = false;
-    editableviewholder.appendChild(viewElement);
+    editableView.appendChild(viewElement);
 
     editContext.addEventListener("textupdate", e => {
         e.editContext = editContext;

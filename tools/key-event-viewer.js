@@ -149,7 +149,7 @@ function init() {
 	];
 
 	// Remove read-only option for contenteditable.
-	var el = document.getElementById("editableviewholder");
+	var el = document.getElementById("editableView");
 	if (el.tagName == "DIV") {
 		extra_options.shift();
 	}
@@ -157,7 +157,7 @@ function init() {
 	createOptions(document.getElementById("options"), _key_event_info, _key_table_info, extra_options);
 	resetTable(false);
 
-	var input = document.getElementById("editableviewholder");
+	var input = document.getElementById("editableView");
 	addEventListener(input, "keydown", onKeyDown);
 	addEventListener(input, "keypress", onKeyPress);
 	addEventListener(input, "keyup", onKeyUp);
@@ -305,7 +305,7 @@ function addCompositionEvent(etype, e) {
 // =====
 
 function calcInput() {
-	var el = document.getElementById("editableviewholder");
+	var el = document.getElementById("editableView");
 	var value = "";
 	if (el.tagName == "DIV") {
 		// <div contenteditable>
@@ -319,7 +319,7 @@ function calcInput() {
 
 /* Set the focus to the input box. */
 function setInputFocus(resetData) {
-	var input = document.getElementById("editableviewholder");
+	var input = document.getElementById("editableView");
 	
 	if (resetData) {
 		if (input.tagName == "DIV") {
@@ -419,7 +419,7 @@ function calcHilightString(eventType, data, addArrow) {
 
 function toggleReadonly() {
 	var cbReadonly = document.getElementById("readonlyToggle");
-	var input = document.getElementById("editableviewholder");
+	var input = document.getElementById("editableView");
 	if (cbReadonly.checked) {
 		input.setAttribute('readonly', true);
 	} else {
