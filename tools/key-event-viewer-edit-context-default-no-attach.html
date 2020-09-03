@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Keyboard Event Viewer</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<script type="text/javascript" src="output-table.js" ></script>
+<script type="text/javascript" src="options.js" ></script>
+<script type="text/javascript" src="key-event-viewer-edit-context.js" ></script>
+<link rel="stylesheet" type="text/css" href="key-event-viewer.css" />
+</head>
+
+<body>
+<a class="main_link" href="main.html">UI Events Testing Tools</a>
+<h1>Keyboard Event Viewer <span class="subtitle">for EditContext</span></h1>
+<p>UserAgent: <span id="useragent"></span></p>
+<p><code>div</code> with <code>contenteditable="false"</code> WITHOUT EditContext attached:</p>
+<p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
+<div id="options"></div>
+
+<div id="editableviewholder" contenteditable=false style="width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+
+<br><table id="output"></table>
+
+<script language="javascript">
+init();
+</script>
+
+<script>
+    var editContext = new EditContext();
+    editContext.focus();
+
+    var viewElement = document.createElement('div');
+    viewElement.style = "position:relative; white-space:pre; width:300px; height:150px";
+    viewElement.contentEditable = false;
+    editableviewholder.appendChild(viewElement);
+
+    editContext.addEventListener("textupdate", e => {
+        e.editContext = editContext;
+        handleKeyEvent("keydown", e);
+    });
+
+    editContext.addEventListener("textformatupdate", e => { 
+        e.editContext = editContext;
+        handleKeyEvent("keydown", e);
+    });
+
+    editContext.addEventListener("compositionstart", e => { 
+        e.editContext = editContext;
+        handleKeyEvent("keydown", e);
+    });
+
+    editContext.addEventListener("compositionend", e => { 
+        e.editContext = editContext;
+        handleKeyEvent("keydown", e);
+    });
+</script>
+</body>
+</html>
