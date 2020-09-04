@@ -45,42 +45,17 @@ init();
         }
     });
 
-
     editContext.addEventListener("textupdate", e => {
         console.log(`textupdate:[${e.updateText}], composition range (${e.updateRangeStart}, ${e.updateRangeEnd}), selection (${e.newSelectionStart}, ${e.newSelectionEnd})`)
         // Update event table
         handleKeyEvent("keydown", e);
 
-        // Visualize EditContext buffer
-        viewElement.innerHTML = editContext.text;
-
-        let textNode = viewElement.childNodes[0];
-        let selection_range = document.createRange();
-
-        // Show dashed line if the composition is in progress.
         if (e.updateRangeStart != e.updateRangeEnd) {
-            textNode.splitText(e.updateRangeEnd); // trim text after composition
-            let compositionText = textNode.splitText(e.updateRangeStart);
-            let dashedLine = document.createElement("span");
-            dashedLine.style = "border-bottom:1px dashed gray";
-            viewElement.insertBefore(dashedLine, compositionText);
-            dashedLine.appendChild(compositionText);
-            // Update selection range
-            selection_range.setStart(compositionText, e.newSelectionStart - e.updateRangeStart);
-            selection_range.setEnd(compositionText, e.newSelectionEnd - e.updateRangeStart);
+            // Show dashed line if composition is in progress.
+            updateViewWithComposition(editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd);
         } else {
-            selection_range.setStart(textNode, e.newSelectionStart);
-            selection_range.setEnd(textNode, e.newSelectionEnd);
+            updateView(editContext.text, e.newSelectionStart, e.newSelectionEnd);
         }
-
-        // Visualize caret/selection
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(selection_range);
-
-        // Update bounds for IME. (TODO: handle zoom factor)
-        let controlBound = viewElement.getBoundingClientRect();
-        let selectionBound = selection_range.getBoundingClientRect();
-        editContext.updateLayout(controlBound, selectionBound);
     });
 
     editContext.addEventListener("textformatupdate", e => { 
@@ -93,17 +68,44 @@ init();
 
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
+        // Hide dashed line.
+        updateView(editContext.text, editContext.selectionStart, editContext.selectionEnd);
+    });
 
-        // Hide dashed line
-        viewElement.innerHTML = editContext.text;
+    function updateView(text, selectionStart, selectionEnd) {
+        viewElement.innerHTML = text;
         // Update selection range
         let textNode = viewElement.childNodes[0];
         let selection_range = document.createRange();
-        selection_range.setStart(textNode, editContext.selectionStart);
-        selection_range.setEnd(textNode, editContext.selectionEnd);
+        selection_range.setStart(textNode, selectionStart);
+        selection_range.setEnd(textNode, selectionEnd);
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(selection_range);
-    });
+    }
+
+    function updateViewWithComposition(text, selectionStart, selectionEnd, compositionStart, compositionEnd) {
+        viewElement.innerHTML = text;
+        let textNode = viewElement.childNodes[0];
+        textNode.splitText(compositionEnd); // trim text after composition
+        let compositionText = textNode.splitText(compositionStart);
+
+        let dashedLine = document.createElement("span");
+        dashedLine.style = "border-bottom:1px dashed gray";
+        viewElement.insertBefore(dashedLine, compositionText);
+        dashedLine.appendChild(compositionText);
+
+        // Update selection range
+        let selection_range = document.createRange();
+        selection_range.setStart(compositionText, selectionStart - compositionStart);
+        selection_range.setEnd(compositionText, selectionEnd - compositionStart);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(selection_range);
+
+        // Update bounds for IME. (TODO: handle zoom factor)
+        let controlBound = viewElement.getBoundingClientRect();
+        let selectionBound = selection_range.getBoundingClientRect();
+        editContext.updateLayout(controlBound, selectionBound);
+    }
 </script>
 </body>
 </html>
