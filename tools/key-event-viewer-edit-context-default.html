@@ -45,6 +45,7 @@ init();
         }
     });
 
+
     editContext.addEventListener("textupdate", e => {
         console.log(`textupdate:[${e.updateText}], composition range (${e.updateRangeStart}, ${e.updateRangeEnd}), selection (${e.newSelectionStart}, ${e.newSelectionEnd})`)
         // Update event table
@@ -60,13 +61,10 @@ init();
         if (e.updateRangeStart != e.updateRangeEnd) {
             textNode.splitText(e.updateRangeEnd); // trim text after composition
             let compositionText = textNode.splitText(e.updateRangeStart);
-
-            let composition_range = document.createRange();
-            composition_range.selectNode(compositionText);
             let dashedLine = document.createElement("span");
             dashedLine.style = "border-bottom:1px dashed gray";
-            composition_range.surroundContents(dashedLine);
-
+            viewElement.insertBefore(dashedLine, compositionText);
+            dashedLine.appendChild(compositionText);
             // Update selection range
             selection_range.setStart(compositionText, e.newSelectionStart - e.updateRangeStart);
             selection_range.setEnd(compositionText, e.newSelectionEnd - e.updateRangeStart);
