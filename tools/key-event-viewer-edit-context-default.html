@@ -17,7 +17,7 @@
 <p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
 <div id="options"></div>
 
-<div id="editableView" contenteditable=false style="white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+<div id="editableView" contenteditable=false style="padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
 
 <br><table id="output"></table>
 
@@ -46,6 +46,7 @@ init();
     });
 
     editContext.addEventListener("textupdate", e => {
+        console.log(`textupdate:[${e.updateText}], range (${e.updateRangeStart}, ${e.updateRangeEnd})`)
         // Update event table
         handleKeyEvent("keydown", e);
 
