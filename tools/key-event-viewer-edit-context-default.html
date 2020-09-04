@@ -17,7 +17,7 @@
 <p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
 <div id="options"></div>
 
-<div id="editableView" contenteditable=false style="padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+<div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
 
 <br><table id="output"></table>
 
@@ -46,25 +46,30 @@ init();
     });
 
     editContext.addEventListener("textupdate", e => {
-        console.log(`textupdate:[${e.updateText}], range (${e.updateRangeStart}, ${e.updateRangeEnd})`)
+        console.log(`textupdate:[${e.updateText}], range (${e.updateRangeStart}, ${e.updateRangeEnd}), selection (${e.newSelectionStart}, ${e.newSelectionEnd})`)
         // Update event table
         handleKeyEvent("keydown", e);
 
         // Visualize EditContext buffer
-        viewElement.innerText = editContext.text;
+        viewElement.innerHTML = editContext.text;
 
         // Visualize caret/selection
-        let text = viewElement.childNodes[0];
-        let range = document.createRange();
-        range.setStart(text, e.newSelectionStart);
-        range.setEnd(text, e.newSelectionEnd);
+        let textNode = viewElement.childNodes[0];
+        let selection_range = document.createRange();
+        selection_range.setStart(textNode, e.newSelectionStart);
+        selection_range.setEnd(textNode, e.newSelectionEnd);
         window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
+        window.getSelection().addRange(selection_range);
 
         // Update bounds for IME. (TODO: handle zoom factor)
-        let controlBounds = viewElement.getBoundingClientRect();
-        let selectionBounds = range.getBoundingClientRect();
-        editContext.updateLayout(controlBounds, selectionBounds);
+        let controlBound = viewElement.getBoundingClientRect();
+        let selectionBound = selection_range.getBoundingClientRect();
+        editContext.updateLayout(controlBound, selectionBound);
+
+        // Show dashed line if the composition is in progress.
+        if (e.updateRangeStart != e.updateRangeEnd) {
+            showDashedLine(textNode, e);
+        }
     });
 
     editContext.addEventListener("textformatupdate", e => { 
@@ -77,7 +82,30 @@ init();
 
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
+        hideDashedLine();
     });
+
+    function showDashedLine(textNode, e) {
+        let range = document.createRange();
+        range.setStart(textNode, e.updateRangeStart);
+        range.setEnd(textNode, e.updateRangeEnd);
+        let compositionBound = range.getBoundingClientRect();
+        let controlBound = viewElement.getBoundingClientRect();
+        let dashlineSpacing = 3;
+        let bottomOffset = controlBound.bottom - compositionBound.bottom - dashlineSpacing;
+        let leftOffset = compositionBound.left - controlBound.left;
+
+        let dashedLine = document.createElement("div");
+        dashedLine.style = "position:absolute; bottom:5px; border-bottom:1px dashed gray";
+        dashedLine.style.width = compositionBound.width + "px";
+        dashedLine.style.bottom = bottomOffset + "px";
+        dashedLine.style.left = leftOffset + "px";
+        viewElement.appendChild(dashedLine);
+    }
+
+    function hideDashedLine() {
+        viewElement.removeChild(viewElement.lastChild); // assume the last child is the <div> for the dashed line.
+    }
 </script>
 </body>
 </html>
