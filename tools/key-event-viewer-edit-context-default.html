@@ -54,6 +54,7 @@ init();
             // Show dashed line if composition is in progress.
             updateViewWithComposition(editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd);
         } else {
+            // Hide dashed line.
             updateView(editContext.text, e.newSelectionStart, e.newSelectionEnd);
         }
     });
@@ -68,36 +69,32 @@ init();
 
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
-        // Hide dashed line.
         updateView(editContext.text, editContext.selectionStart, editContext.selectionEnd);
     });
 
     function updateView(text, selectionStart, selectionEnd) {
         viewElement.innerHTML = text;
-        // Update selection range
-        let textNode = viewElement.childNodes[0];
-        let selection_range = document.createRange();
-        selection_range.setStart(textNode, selectionStart);
-        selection_range.setEnd(textNode, selectionEnd);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(selection_range);
+        updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
     }
 
     function updateViewWithComposition(text, selectionStart, selectionEnd, compositionStart, compositionEnd) {
         viewElement.innerHTML = text;
         let textNode = viewElement.childNodes[0];
         textNode.splitText(compositionEnd); // trim text after composition
-        let compositionText = textNode.splitText(compositionStart);
+        let compositionTextNode = textNode.splitText(compositionStart);
 
         let dashedLine = document.createElement("span");
         dashedLine.style = "border-bottom:1px dashed gray";
-        viewElement.insertBefore(dashedLine, compositionText);
-        dashedLine.appendChild(compositionText);
+        viewElement.insertBefore(dashedLine, compositionTextNode);
+        dashedLine.appendChild(compositionTextNode);
 
-        // Update selection range
+        updateSelection(compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart);
+    }
+
+    function updateSelection(textNode, selectionStart, selectionEnd) {
         let selection_range = document.createRange();
-        selection_range.setStart(compositionText, selectionStart - compositionStart);
-        selection_range.setEnd(compositionText, selectionEnd - compositionStart);
+        selection_range.setStart(textNode, selectionStart);
+        selection_range.setEnd(textNode, selectionEnd);
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(selection_range);
 
