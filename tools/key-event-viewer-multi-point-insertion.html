@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Keyboard Event Viewer</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<script type="text/javascript" src="output-table.js" ></script>
+<script type="text/javascript" src="options.js" ></script>
+<script type="text/javascript" src="key-event-viewer-edit-context.js" ></script>
+<link rel="stylesheet" type="text/css" href="key-event-viewer.css" />
+</head>
+
+<body>
+<a class="main_link" href="main.html">UI Events Testing Tools</a>
+<h1>Keyboard Event Viewer <span class="subtitle">for EditContext</span></h1>
+<p>UserAgent: <span id="useragent"></span></p>
+<p><code>div</code> with <code>contenteditable="false"</code> with EditContext attached:</p>
+<p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
+<div id="options"></div>
+
+<div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+
+<br><table id="output"></table>
+
+<script language="javascript">
+init();
+</script>
+
+<script>
+    var editContext = new EditContext();
+
+    var viewElement = document.getElementById("editableView");
+    viewElement.attachEditContext(editContext);
+
+    viewElement.addEventListener("focus", e => {
+        editContext.focus();
+    });
+
+    viewElement.addEventListener("blur", e => {
+        editContext.blur();
+    });
+
+    viewElement.addEventListener("beforeinput", e => {
+        if (e.inputType === "deleteContentBackward") {
+            //e.preventDefault();
+        }
+    });
+
+    editContext.addEventListener("textupdate", e => {
+        console.log(`textupdate:[${e.updateText}], composition range (${e.updateRangeStart}, ${e.updateRangeEnd}), selection (${e.newSelectionStart}, ${e.newSelectionEnd})`)
+        // Update event table
+        handleKeyEvent("keydown", e);
+
+        if (e.updateRangeStart != e.updateRangeEnd) {
+            // Show dashed line if composition is in progress.
+            updateViewWithComposition(editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd);
+        } else {
+            // Hide dashed line.
+            updateView(editContext.text, e.newSelectionStart, e.newSelectionEnd);
+        }
+    });
+
+    editContext.addEventListener("textformatupdate", e => { 
+        handleKeyEvent("keydown", e);
+    });
+
+    editContext.addEventListener("compositionstart", e => { 
+        handleKeyEvent("keydown", e);
+    });
+
+    editContext.addEventListener("compositionend", e => { 
+        handleKeyEvent("keydown", e);
+        updateView(editContext.text, editContext.selectionStart, editContext.selectionEnd);
+    });
+
+    function updateView(text, selectionStart, selectionEnd) {
+        viewElement.innerHTML = text;
+        updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
+    }
+
+    function updateViewWithComposition(text, selectionStart, selectionEnd, compositionStart, compositionEnd) {
+        viewElement.innerHTML = text;
+        let textNode = viewElement.childNodes[0];
+        textNode.splitText(compositionEnd); // trim text after composition
+        let compositionTextNode = textNode.splitText(compositionStart);
+
+        let dashedLine = document.createElement("span");
+        dashedLine.style = "border-bottom:1px dashed gray";
+        viewElement.insertBefore(dashedLine, compositionTextNode);
+        dashedLine.appendChild(compositionTextNode);
+
+        updateSelection(compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart);
+    }
+
+    function updateSelection(textNode, selectionStart, selectionEnd) {
+        let selection_range = document.createRange();
+        selection_range.setStart(textNode, selectionStart);
+        selection_range.setEnd(textNode, selectionEnd);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(selection_range);
+
+        // Update bounds for IME. (TODO: handle zoom factor)
+        let controlBound = viewElement.getBoundingClientRect();
+        let selectionBound = selection_range.getBoundingClientRect();
+        editContext.updateLayout(controlBound, selectionBound);
+    }
+</script>
+</body>
+</html>
