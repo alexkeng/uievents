@@ -62,7 +62,7 @@ init();
         // Update event table
         handleKeyEvent("keydown", e);
 
-        console.log(`editContext.text:[${editContext.text}]`);
+        console.log(`editContext.text:[${editContext.text}], len:${editContext.text.length}`);
         let text = editContext.text;
 
         if (text == "") { // seems some bug in EditContext?
@@ -104,15 +104,16 @@ init();
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
 
+        console.log(`compositionend: editContext.text:[${editContext.text}], len:${editContext.text.length}`);
         let text = editContext.text;
         if (text.length > maxTextLengthInPage) {
             let text1 = text.substring(0, maxTextLengthInPage);
             let text2 = text.substring(maxTextLengthInPage);
-            updateView(viewElement, text1, e.newSelectionStart, maxTextLengthInPage, false);
-            updateView(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, true);
+            updateView(viewElement, text1, 0, 0, false);
+            updateView(viewElement2, text2, editContext.selectionStart-maxTextLengthInPage, editContext.selectionEnd-maxTextLengthInPage, true);
         } else {
-            updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
-            updateView(viewElement2, "", e.newSelectionStart, e.newSelectionEnd, false);
+            updateView(viewElement, editContext.text, editContext.selectionStart, editContext.selectionEnd, true);
+            updateView(viewElement2, "", 0, 0, false);
         }
     });
 
