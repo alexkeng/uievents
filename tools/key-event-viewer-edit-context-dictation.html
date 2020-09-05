@@ -47,7 +47,7 @@ init();
     });
 
     viewElement.addEventListener("blur", e => {
-        editContext.blur();
+        //editContext.blur(); // TODO: figure out when we call this when multiple elements are associated
     });
 
     viewElement.addEventListener("beforeinput", e => {
@@ -72,7 +72,7 @@ init();
             // Show dashed line if composition is in progress. Hide dashed line otherwise.
             if (e.updateRangeStart != e.updateRangeEnd) {
                 updateViewWithComposition(viewElement, text1, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, maxTextLengthInPage, false);
-                updateViewWithComposition(viewElement2, text2, e.newSelectionStart, e.newSelectionEnd, 0, e.updateRangeEnd-maxTextLengthInPage, true);
+                updateViewWithComposition(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, 0, e.updateRangeEnd-maxTextLengthInPage, true);
             } else {
                 updateView(viewElement, text1, e.newSelectionStart, maxTextLengthInPage, false);
                 viewElement2.focus();
@@ -85,6 +85,7 @@ init();
             } else {
                 // Hide dashed line.
                 updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+                updateView(viewElement2, "", e.newSelectionStart, e.newSelectionEnd, false);
             }
         }
     });
