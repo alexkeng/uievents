@@ -55,6 +55,9 @@ init();
 
     viewElement.addEventListener("focus", e => {
         editContext.focus();
+        updateView(viewElement, "", 0, 0, true);
+        updateView(viewElement2, "", 0, 0, false);
+        updateView(viewElement3, "", 0, 0, false);
     });
 
     viewElement.addEventListener("blur", e => {
@@ -75,13 +78,13 @@ init();
         if (e.updateRangeStart != e.updateRangeEnd) {
             // Show dashed line if composition is in progress.
             updateViewWithComposition(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
-            updateViewWithComposition(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
-            updateViewWithComposition(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
+            updateViewWithComposition(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, false);
+            updateViewWithComposition(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, false);
         } else {
             // Hide dashed line.
             updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
-            updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
-            updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+            updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
+            updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
         }
     });
 
@@ -96,18 +99,24 @@ init();
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
         updateView(viewElement, editContext.text, editContext.selectionStart, editContext.selectionEnd, true);
-        updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
-        updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+        updateView(viewElement2, editContext.text, editContext.selectionStart, editContext.selectionEnd, false);
+        updateView(viewElement3, editContext.text, editContext.selectionStart, editContext.selectionEnd, false);
     });
 
-    function updateView(viewElement, text, selectionStart, selectionEnd, isSelectionUpdated) {
+    function updateView(viewElement, text, selectionStart, selectionEnd, updateSelectionBound) {
         viewElement.innerHTML = text;
-        if (isSelectionUpdated) {
-            updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
+
+        if (text == "") {
+            let caret = document.createElement("span");
+            caret.style = "width:1px; border-left:1px solid black";
+            caret.classList.add('blink');
+            viewElement.appendChild(caret);
+        } else {
+            updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd, updateSelectionBound);
         }
     }
 
-    function updateViewWithComposition(viewElement, text, selectionStart, selectionEnd, compositionStart, compositionEnd, isSelectionUpdated) {
+    function updateViewWithComposition(viewElement, text, selectionStart, selectionEnd, compositionStart, compositionEnd, updateSelectionBound) {
         viewElement.innerHTML = text;
         let textNode = viewElement.childNodes[0];
         textNode.splitText(compositionEnd); // trim text after composition
@@ -118,12 +127,10 @@ init();
         viewElement.insertBefore(dashedLine, compositionTextNode);
         dashedLine.appendChild(compositionTextNode);
 
-        if (isSelectionUpdated) {
-            updateSelection(compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart);
-        }
+        updateSelection(compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart, updateSelectionBound);
     }
 
-    function updateSelection(textNode, selectionStart, selectionEnd) {
+    function updateSelection(textNode, selectionStart, selectionEnd, updateSelectionBound) {
         if (selectionStart == selectionEnd) {
             let TextNodeAfterCaret = textNode.splitText(selectionStart);
             let caret = document.createElement("span");
@@ -132,17 +139,14 @@ init();
             TextNodeAfterCaret.parentElement.insertBefore(caret, TextNodeAfterCaret);
 
             // Update bounds for IME. (TODO: handle zoom factor)
-            let controlBound = viewElement.getBoundingClientRect();
-            let selectionBound = caret.getBoundingClientRect();
-            editContext.updateLayout(controlBound, selectionBound);
+            if (updateSelectionBound) {
+                let controlBound = viewElement.getBoundingClientRect();
+                let selectionBound = caret.getBoundingClientRect();
+                editContext.updateLayout(controlBound, selectionBound);
+            }
+        } else {
+
         }
-
-        // let selection_range = document.createRange();
-        // selection_range.setStart(textNode, selectionStart);
-        // selection_range.setEnd(textNode, selectionEnd);
-        // window.getSelection().removeAllRanges();
-        // window.getSelection().addRange(selection_range);
-
     }
 </script>
 </body>
