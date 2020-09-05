@@ -324,11 +324,14 @@ function calcInput(editContext_backup) {
 		if (!editContext)
 			editContext = editContext_backup;
         if (editContext) {
-            value = editContext.text;
+			value = editContext.text;
+			// visualize selection using "{}"
             var selectionStart = editContext.selectionStart;
             var selectionEnd = editContext.selectionEnd;
-            value = value.splice(selectionEnd, 0, "}"); // To visualize the selection
-            value = value.splice(selectionStart, 0, "{");
+            value = value.splice(selectionEnd, 0, "}");
+			value = value.splice(selectionStart, 0, "{");
+			// visualize <enter> using "⤶"
+			value = value.replaceAll("\n", "⤶");
         } else {
             value = el.innerText;
         }
