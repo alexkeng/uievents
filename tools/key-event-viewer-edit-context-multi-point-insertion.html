@@ -51,7 +51,6 @@ init();
     var viewElement3 = document.getElementById("editableView3");
 
     viewElement.attachEditContext(editContext);
-    viewElement3.attachEditContext(editContext);
 
     viewElement.addEventListener("focus", e => {
         editContext.focus();
@@ -132,7 +131,7 @@ init();
 
     function updateSelection(viewElement, textNode, selectionStart, selectionEnd, updateSelectionBound) {
         if (selectionStart == selectionEnd) {
-            // add custom caret
+            // Simulate Caret
             let TextNodeAfterCaret = textNode.splitText(selectionStart);
             let caret = document.createElement("span");
             caret.style = "width:1px; border-left:1px solid black";
@@ -146,13 +145,14 @@ init();
                 editContext.updateLayout(controlBound, selectionBound);
             }
         } else {
+            // Simulate selectio hightlight.
             textNode.splitText(selectionEnd); // trim text after composition
             let SelectedTextNode = textNode.splitText(selectionStart);
 
-            let dashedLine = document.createElement("span");
-            dashedLine.style = "color:white; background-color:#3390ff";
-            viewElement.insertBefore(dashedLine, SelectedTextNode);
-            dashedLine.appendChild(SelectedTextNode);
+            let selectionHighlight = document.createElement("span");
+            selectionHighlight.style = "color:white; background-color:#3390ff";
+            viewElement.insertBefore(selectionHighlight, SelectedTextNode);
+            selectionHighlight.appendChild(SelectedTextNode);
         }
     }
 </script>
