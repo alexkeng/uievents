@@ -56,32 +56,35 @@ init();
         }
     });
 
-    let maxTextLengthInPage = 5;
+    let maxTextLengthInPage = 35;
     editContext.addEventListener("textupdate", e => {
         console.log(`textupdate:[${e.updateText}], composition range (${e.updateRangeStart}, ${e.updateRangeEnd}), selection (${e.newSelectionStart}, ${e.newSelectionEnd})`)
         // Update event table
         handleKeyEvent("keydown", e);
 
+        console.log(`editContext.text:[${editContext.text}]`);
         let text = editContext.text;
+
+        if (text == "") { // seems some bug in EditContext?
+            return;
+        }
+
         if (text.length > maxTextLengthInPage) {
             let text1 = text.substring(0, maxTextLengthInPage);
             let text2 = text.substring(maxTextLengthInPage);
-            viewElement.innerHTML = text1;
-            viewElement2.innerHTML = text2;
-
             // Show dashed line if composition is in progress. Hide dashed line otherwise.
             if (e.updateRangeStart != e.updateRangeEnd) {
                 updateViewWithComposition(viewElement, text1, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, maxTextLengthInPage, false);
                 updateViewWithComposition(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, 0, e.updateRangeEnd-maxTextLengthInPage, true);
             } else {
                 updateView(viewElement, text1, e.newSelectionStart, maxTextLengthInPage, false);
-                viewElement2.focus();
                 updateView(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, true);
             }
         } else {
             if (e.updateRangeStart != e.updateRangeEnd) {
                 // Show dashed line if composition is in progress.
                 updateViewWithComposition(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
+                updateView(viewElement2, "", e.newSelectionStart, e.newSelectionEnd, false);
             } else {
                 // Hide dashed line.
                 updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
@@ -100,7 +103,17 @@ init();
 
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
-        updateView(viewElement, editContext.text, editContext.selectionStart, editContext.selectionEnd, true);
+
+        let text = editContext.text;
+        if (text.length > maxTextLengthInPage) {
+            let text1 = text.substring(0, maxTextLengthInPage);
+            let text2 = text.substring(maxTextLengthInPage);
+            updateView(viewElement, text1, e.newSelectionStart, maxTextLengthInPage, false);
+            updateView(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, true);
+        } else {
+            updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+            updateView(viewElement2, "", e.newSelectionStart, e.newSelectionEnd, false);
+        }
     });
 
     function updateView(viewElement, text, selectionStart, selectionEnd, isSelectionUpdated) {
