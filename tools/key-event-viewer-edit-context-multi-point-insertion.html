@@ -112,7 +112,7 @@ init();
             caret.classList.add('blink');
             viewElement.appendChild(caret);
         } else {
-            updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd, updateSelectionBound);
+            updateSelection(viewElement, viewElement.childNodes[0], selectionStart, selectionEnd, updateSelectionBound);
         }
     }
 
@@ -127,11 +127,12 @@ init();
         viewElement.insertBefore(dashedLine, compositionTextNode);
         dashedLine.appendChild(compositionTextNode);
 
-        updateSelection(compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart, updateSelectionBound);
+        updateSelection(viewElement, compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart, updateSelectionBound);
     }
 
-    function updateSelection(textNode, selectionStart, selectionEnd, updateSelectionBound) {
+    function updateSelection(viewElement, textNode, selectionStart, selectionEnd, updateSelectionBound) {
         if (selectionStart == selectionEnd) {
+            // add custom caret
             let TextNodeAfterCaret = textNode.splitText(selectionStart);
             let caret = document.createElement("span");
             caret.style = "width:1px; border-left:1px solid black";
@@ -145,7 +146,13 @@ init();
                 editContext.updateLayout(controlBound, selectionBound);
             }
         } else {
+            textNode.splitText(selectionEnd); // trim text after composition
+            let SelectedTextNode = textNode.splitText(selectionStart);
 
+            let dashedLine = document.createElement("span");
+            dashedLine.style = "color:white; background-color:#3390ff";
+            viewElement.insertBefore(dashedLine, SelectedTextNode);
+            dashedLine.appendChild(SelectedTextNode);
         }
     }
 </script>
