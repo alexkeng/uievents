@@ -17,12 +17,13 @@
 <p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
 <div id="options"></div>
 
-<table><tr>
+<table style="font-family:'Courier New', Courier, monospace;font-size:small"><tr>
     <td>
-        <div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+        <div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:18px; border:blue 1px dashed" tabindex="-1"></div>
     </td>
+    <td>&nbsp;&nbsp;</td>
     <td>
-        <div id="editableView2" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+        <div id="editableView2" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:500px; height:18px; border:blue 1px dashed" tabindex="-1"></div>
     </td>
 </tr></table>
 
@@ -79,13 +80,20 @@ init();
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
         updateView(viewElement, editContext.text, editContext.selectionStart, editContext.selectionEnd, true);
-        updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
     });
 
     function updateView(viewElement, text, selectionStart, selectionEnd, isSelectionUpdated) {
-        viewElement.innerHTML = text;
-        if (isSelectionUpdated) {
-            updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
+        let maxLength = 52;
+        if (text.length > maxLength) {
+            let text1 = text.substring(0, maxLength);
+            let text2 = text.substring(maxLength);
+            viewElement.innerHTML = text1;
+            viewElement2.innerHTML = text2;
+        } else {
+            viewElement.innerHTML = text;
+            if (isSelectionUpdated) {
+                updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
+            }
         }
     }
 
