@@ -17,7 +17,17 @@
 <p><input id="resetTable" type="button" onclick="resetTable();return false" value="Clear Table"/> <a id="optionsToggle" href="javascript:toggleOptions()">Show Options</a></p>
 <div id="options"></div>
 
-<div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+<table><tr>
+    <td>
+        <div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+    </td>
+    <td>
+        <div id="editableView2" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+    </td>
+    <td>
+        <div id="editableView3" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+    </td>
+</tr></table>
 
 <br><table id="output"></table>
 
@@ -29,6 +39,9 @@ init();
     var editContext = new EditContext();
 
     var viewElement = document.getElementById("editableView");
+    var viewElement2 = document.getElementById("editableView2");
+    var viewElement3 = document.getElementById("editableView3");
+
     viewElement.attachEditContext(editContext);
 
     viewElement.addEventListener("focus", e => {
@@ -52,10 +65,14 @@ init();
 
         if (e.updateRangeStart != e.updateRangeEnd) {
             // Show dashed line if composition is in progress.
-            updateViewWithComposition(editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd);
+            updateViewWithComposition(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
+            updateViewWithComposition(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, false);
+            updateViewWithComposition(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, false);
         } else {
             // Hide dashed line.
-            updateView(editContext.text, e.newSelectionStart, e.newSelectionEnd);
+            updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+            updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
+            updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
         }
     });
 
@@ -69,15 +86,19 @@ init();
 
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
-        updateView(editContext.text, editContext.selectionStart, editContext.selectionEnd);
+        updateView(viewElement, editContext.text, editContext.selectionStart, editContext.selectionEnd, true);
+        updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
+        updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
     });
 
-    function updateView(text, selectionStart, selectionEnd) {
+    function updateView(viewElement, text, selectionStart, selectionEnd, isSelectionUpdated) {
         viewElement.innerHTML = text;
-        updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
+        if (isSelectionUpdated) {
+            updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
+        }
     }
 
-    function updateViewWithComposition(text, selectionStart, selectionEnd, compositionStart, compositionEnd) {
+    function updateViewWithComposition(viewElement, text, selectionStart, selectionEnd, compositionStart, compositionEnd, isSelectionUpdated) {
         viewElement.innerHTML = text;
         let textNode = viewElement.childNodes[0];
         textNode.splitText(compositionEnd); // trim text after composition
@@ -88,7 +109,9 @@ init();
         viewElement.insertBefore(dashedLine, compositionTextNode);
         dashedLine.appendChild(compositionTextNode);
 
-        updateSelection(compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart);
+        if (isSelectionUpdated) {
+            updateSelection(compositionTextNode, selectionStart - compositionStart, selectionEnd - compositionStart);
+        }
     }
 
     function updateSelection(textNode, selectionStart, selectionEnd) {
