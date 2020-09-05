@@ -19,11 +19,11 @@
 
 <table style="font-family:'Courier New', Courier, monospace;font-size:small"><tr>
     <td>
-        <div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:18px; border:blue 1px dashed" tabindex="-1"></div>
+        <div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:20px; border:blue 1px dashed" tabindex="-1"></div>
     </td>
     <td>&nbsp;&nbsp;</td>
     <td>
-        <div id="editableView2" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:500px; height:18px; border:blue 1px dashed" tabindex="-1"></div>
+        <div id="editableView2" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:500px; height:20px; border:blue 1px dashed" tabindex="-1"></div>
     </td>
 </tr></table>
 
@@ -74,7 +74,11 @@ init();
             let text2 = text.substring(maxTextLengthInPage);
             // Show dashed line if composition is in progress. Hide dashed line otherwise.
             if (e.updateRangeStart != e.updateRangeEnd) {
+                let view1CompositionStart = (e.updateRangeStart < maxTextLengthInPage) ? e.updateRangeStart : maxTextLengthInPage;
+                let view1CompositionEnd = (e.updateRangeEnd < maxTextLengthInPage) ? e.updateRangeEnd : maxTextLengthInPage;
                 updateViewWithComposition(viewElement, text1, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, maxTextLengthInPage, false);
+                let view2CompositionStart = (e.updateRangeStart >= maxTextLengthInPage) ? e.updateRangeStart - maxTextLengthInPage : 0;
+                let view2CompositionEnd = (e.updateRangeEnd >= maxTextLengthInPage) ? e.updateRangeEnd - maxTextLengthInPage : 0;
                 updateViewWithComposition(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, 0, e.updateRangeEnd-maxTextLengthInPage, true);
             } else {
                 updateView(viewElement, text1, e.newSelectionStart, maxTextLengthInPage, false);
@@ -125,6 +129,11 @@ init();
     }
 
     function updateViewWithComposition(viewElement, text, selectionStart, selectionEnd, compositionStart, compositionEnd, isSelectionUpdated) {
+        let length = text.length;
+        if (selectionStart > length || selectionEnd > length || compositionStart > length || compositionEnd > length) {
+            console.log(`updateViewWithComposition has invalid index: text (${text}), len (${text.length}) composition range (${compositionStart}, ${compositionEnd}), selection (${selectionStart}, ${selectionEnd})`)
+            return;
+        }
         viewElement.innerHTML = text;
         let textNode = viewElement.childNodes[0];
         textNode.splitText(compositionEnd); // trim text after composition
