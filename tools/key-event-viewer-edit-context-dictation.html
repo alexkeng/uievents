@@ -65,24 +65,33 @@ init();
         console.log(`editContext.text:[${editContext.text}], len:${editContext.text.length}`);
         let text = editContext.text;
 
-        if (text == "") { // seems some bug in EditContext?
-            return;
-        }
+        // if (text == "") { // seems some bug in EditContext? // can't delete last char
+        //     return;
+        // }
 
         if (text.length > maxTextLengthInPage) {
             let text1 = text.substring(0, maxTextLengthInPage);
             let text2 = text.substring(maxTextLengthInPage);
+
+            let view1SelectionStart = (e.newSelectionStart < maxTextLengthInPage) ? e.newSelectionStart : maxTextLengthInPage;
+            let view1SelectionEnd = (e.newSelectionEnd < maxTextLengthInPage) ? e.newSelectionEnd : maxTextLengthInPage;
+            let view2SelectionStart = (e.newSelectionStart >= maxTextLengthInPage) ? e.newSelectionStart - maxTextLengthInPage : 0;
+            let view2SelectionEnd = (e.newSelectionEnd >= maxTextLengthInPage) ? e.newSelectionEnd - maxTextLengthInPage : 0;
+            let view1UpdateSelection = (view1SelectionEnd < maxTextLengthInPage);
+            let view2UpdateSelection = !view1UpdateSelection;
+
             // Show dashed line if composition is in progress. Hide dashed line otherwise.
             if (e.updateRangeStart != e.updateRangeEnd) {
                 let view1CompositionStart = (e.updateRangeStart < maxTextLengthInPage) ? e.updateRangeStart : maxTextLengthInPage;
                 let view1CompositionEnd = (e.updateRangeEnd < maxTextLengthInPage) ? e.updateRangeEnd : maxTextLengthInPage;
-                updateViewWithComposition(viewElement, text1, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, maxTextLengthInPage, false);
+                updateViewWithComposition(viewElement, text1, view1SelectionStart, view1SelectionEnd, view1CompositionStart, view1CompositionEnd, view1UpdateSelection);
+
                 let view2CompositionStart = (e.updateRangeStart >= maxTextLengthInPage) ? e.updateRangeStart - maxTextLengthInPage : 0;
                 let view2CompositionEnd = (e.updateRangeEnd >= maxTextLengthInPage) ? e.updateRangeEnd - maxTextLengthInPage : 0;
-                updateViewWithComposition(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, 0, e.updateRangeEnd-maxTextLengthInPage, true);
+                updateViewWithComposition(viewElement2, text2, view2SelectionStart, view2SelectionEnd, view2CompositionStart, view2CompositionEnd, view2UpdateSelection);
             } else {
-                updateView(viewElement, text1, e.newSelectionStart, maxTextLengthInPage, false);
-                updateView(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, true);
+                updateView(viewElement, text1, view1SelectionStart, view1SelectionEnd, view1UpdateSelection);
+                updateView(viewElement2, text2, view2SelectionStart, view2SelectionEnd, view2UpdateSelection);
             }
         } else {
             if (e.updateRangeStart != e.updateRangeEnd) {
@@ -113,8 +122,19 @@ init();
         if (text.length > maxTextLengthInPage) {
             let text1 = text.substring(0, maxTextLengthInPage);
             let text2 = text.substring(maxTextLengthInPage);
-            updateView(viewElement, text1, 0, 0, false);
-            updateView(viewElement2, text2, editContext.selectionStart-maxTextLengthInPage, editContext.selectionEnd-maxTextLengthInPage, true);
+
+            selectionStart = editContext.selectionStart;
+            selectionEnd = editContext.selectionEnd;
+
+            let view1SelectionStart = (selectionStart < maxTextLengthInPage) ? selectionStart : maxTextLengthInPage;
+            let view1SelectionEnd = (selectionEnd < maxTextLengthInPage) ? selectionEnd : maxTextLengthInPage;
+            let view2SelectionStart = (selectionStart >= maxTextLengthInPage) ? selectionStart - maxTextLengthInPage : 0;
+            let view2SelectionEnd = (selectionEnd >= maxTextLengthInPage) ? selectionEnd - maxTextLengthInPage : 0;
+            let view1UpdateSelection = (view1SelectionEnd < maxTextLengthInPage);
+            let view2UpdateSelection = !view1UpdateSelection;
+
+            updateView(viewElement, text1, view1SelectionStart, view1SelectionEnd, view1UpdateSelection);
+            updateView(viewElement2, text2, view2SelectionStart, view2SelectionEnd, view2UpdateSelection);
         } else {
             updateView(viewElement, editContext.text, editContext.selectionStart, editContext.selectionEnd, true);
             updateView(viewElement2, "", 0, 0, false);
@@ -131,7 +151,7 @@ init();
     function updateViewWithComposition(viewElement, text, selectionStart, selectionEnd, compositionStart, compositionEnd, isSelectionUpdated) {
         let length = text.length;
         if (selectionStart > length || selectionEnd > length || compositionStart > length || compositionEnd > length) {
-            console.log(`updateViewWithComposition has invalid index: text (${text}), len (${text.length}) composition range (${compositionStart}, ${compositionEnd}), selection (${selectionStart}, ${selectionEnd})`)
+            console.log(`updateViewWithComposition has invalid index: text (${text}), len (${length}) composition range (${compositionStart}, ${compositionEnd}), selection (${selectionStart}, ${selectionEnd})`);
             return;
         }
         viewElement.innerHTML = text;
@@ -150,6 +170,15 @@ init();
     }
 
     function updateSelection(textNode, selectionStart, selectionEnd) {
+        if (textNode == null) {
+            console.log("textNode undefined");
+            return;
+        }
+        let length = textNode.textContent.length;
+        if (selectionStart > length || selectionEnd > length) {
+            console.log(`updateSelection has invalid index: textNode (${ textNode.textContent}), len (${length}) selection (${selectionStart}, ${selectionEnd})`);
+            return;
+        }
         let selection_range = document.createRange();
         selection_range.setStart(textNode, selectionStart);
         selection_range.setEnd(textNode, selectionEnd);
