@@ -40,6 +40,7 @@ init();
     var viewElement2 = document.getElementById("editableView2");
 
     viewElement.attachEditContext(editContext);
+    viewElement2.attachEditContext(editContext);
 
     viewElement.addEventListener("focus", e => {
         editContext.focus();
@@ -55,17 +56,36 @@ init();
         }
     });
 
+    let maxTextLengthInPage = 5;
     editContext.addEventListener("textupdate", e => {
         console.log(`textupdate:[${e.updateText}], composition range (${e.updateRangeStart}, ${e.updateRangeEnd}), selection (${e.newSelectionStart}, ${e.newSelectionEnd})`)
         // Update event table
         handleKeyEvent("keydown", e);
 
-        if (e.updateRangeStart != e.updateRangeEnd) {
-            // Show dashed line if composition is in progress.
-            updateViewWithComposition(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
+        let text = editContext.text;
+        if (text.length > maxTextLengthInPage) {
+            let text1 = text.substring(0, maxTextLengthInPage);
+            let text2 = text.substring(maxTextLengthInPage);
+            viewElement.innerHTML = text1;
+            viewElement2.innerHTML = text2;
+
+            // Show dashed line if composition is in progress. Hide dashed line otherwise.
+            if (e.updateRangeStart != e.updateRangeEnd) {
+                updateViewWithComposition(viewElement, text1, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, maxTextLengthInPage, false);
+                updateViewWithComposition(viewElement2, text2, e.newSelectionStart, e.newSelectionEnd, 0, e.updateRangeEnd-maxTextLengthInPage, true);
+            } else {
+                updateView(viewElement, text1, e.newSelectionStart, maxTextLengthInPage, false);
+                viewElement2.focus();
+                updateView(viewElement2, text2, e.newSelectionStart-maxTextLengthInPage, e.newSelectionEnd-maxTextLengthInPage, true);
+            }
         } else {
-            // Hide dashed line.
-            updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+            if (e.updateRangeStart != e.updateRangeEnd) {
+                // Show dashed line if composition is in progress.
+                updateViewWithComposition(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
+            } else {
+                // Hide dashed line.
+                updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+            }
         }
     });
 
@@ -83,17 +103,9 @@ init();
     });
 
     function updateView(viewElement, text, selectionStart, selectionEnd, isSelectionUpdated) {
-        let maxLength = 52;
-        if (text.length > maxLength) {
-            let text1 = text.substring(0, maxLength);
-            let text2 = text.substring(maxLength);
-            viewElement.innerHTML = text1;
-            viewElement2.innerHTML = text2;
-        } else {
-            viewElement.innerHTML = text;
-            if (isSelectionUpdated) {
-                updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
-            }
+        viewElement.innerHTML = text;
+        if (isSelectionUpdated) {
+            updateSelection(viewElement.childNodes[0], selectionStart, selectionEnd);
         }
     }
 
