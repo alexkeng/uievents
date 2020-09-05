@@ -7,6 +7,14 @@
 <script type="text/javascript" src="options.js" ></script>
 <script type="text/javascript" src="key-event-viewer-edit-context.js" ></script>
 <link rel="stylesheet" type="text/css" href="key-event-viewer.css" />
+<style>
+    .blink {
+      animation: blink-animation 1s steps(5, start) infinite;
+    }
+    @keyframes blink-animation {
+      to {  visibility: hidden; }
+    }
+</style>
 </head>
 
 <body>
@@ -19,13 +27,13 @@
 
 <table><tr>
     <td>
-        <div id="editableView" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+        <div id="editableView" contenteditable=false style="color: transparent;text-shadow: 0 0 0 black;position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
     </td>
     <td>
-        <div id="editableView2" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+        <div id="editableView2" contenteditable=false style="color: transparent;text-shadow: 0 0 0 black;position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
     </td>
     <td>
-        <div id="editableView3" contenteditable=false style="position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
+        <div id="editableView3" contenteditable=false style="color: transparent;text-shadow: 0 0 0 black;position: relative; padding:3px;white-space:pre-wrap; width:300px; height:150px; border:blue 1px dashed" tabindex="-1"></div>
     </td>
 </tr></table>
 
@@ -43,6 +51,7 @@ init();
     var viewElement3 = document.getElementById("editableView3");
 
     viewElement.attachEditContext(editContext);
+    viewElement3.attachEditContext(editContext);
 
     viewElement.addEventListener("focus", e => {
         editContext.focus();
@@ -66,13 +75,13 @@ init();
         if (e.updateRangeStart != e.updateRangeEnd) {
             // Show dashed line if composition is in progress.
             updateViewWithComposition(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
-            updateViewWithComposition(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, false);
-            updateViewWithComposition(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, false);
+            updateViewWithComposition(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
+            updateViewWithComposition(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, e.updateRangeStart, e.updateRangeEnd, true);
         } else {
             // Hide dashed line.
             updateView(viewElement, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
-            updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
-            updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
+            updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+            updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
         }
     });
 
@@ -87,8 +96,8 @@ init();
     editContext.addEventListener("compositionend", e => { 
         handleKeyEvent("keydown", e);
         updateView(viewElement, editContext.text, editContext.selectionStart, editContext.selectionEnd, true);
-        updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
-        updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, false);
+        updateView(viewElement2, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
+        updateView(viewElement3, editContext.text, e.newSelectionStart, e.newSelectionEnd, true);
     });
 
     function updateView(viewElement, text, selectionStart, selectionEnd, isSelectionUpdated) {
@@ -115,16 +124,25 @@ init();
     }
 
     function updateSelection(textNode, selectionStart, selectionEnd) {
-        let selection_range = document.createRange();
-        selection_range.setStart(textNode, selectionStart);
-        selection_range.setEnd(textNode, selectionEnd);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(selection_range);
+        if (selectionStart == selectionEnd) {
+            let TextNodeAfterCaret = textNode.splitText(selectionStart);
+            let caret = document.createElement("span");
+            caret.style = "width:1px; border-left:1px solid black";
+            caret.classList.add('blink');
+            TextNodeAfterCaret.parentElement.insertBefore(caret, TextNodeAfterCaret);
 
-        // Update bounds for IME. (TODO: handle zoom factor)
-        let controlBound = viewElement.getBoundingClientRect();
-        let selectionBound = selection_range.getBoundingClientRect();
-        editContext.updateLayout(controlBound, selectionBound);
+            // Update bounds for IME. (TODO: handle zoom factor)
+            let controlBound = viewElement.getBoundingClientRect();
+            let selectionBound = caret.getBoundingClientRect();
+            editContext.updateLayout(controlBound, selectionBound);
+        }
+
+        // let selection_range = document.createRange();
+        // selection_range.setStart(textNode, selectionStart);
+        // selection_range.setEnd(textNode, selectionEnd);
+        // window.getSelection().removeAllRanges();
+        // window.getSelection().addRange(selection_range);
+
     }
 </script>
 </body>
